@@ -134,7 +134,9 @@ public endpoint receives the update.
 
 1. Push the repository to GitHub.
 2. In the Cloudflare dashboard, open **Workers & Pages** and create a Pages
-   application using **Import an existing Git repository**.
+   application using **Pages > Import an existing Git repository**. Do not
+   create a Workers application; Workers Builds defaults to `npx wrangler
+   deploy`, which is not the Pages deploy command.
 3. Connect this repository and use `main` as the production branch.
 4. Select no framework preset, leave the build command blank, and use `docs` as
    the build output directory.
@@ -158,6 +160,29 @@ For an authenticated manual deployment with Wrangler:
 ```bash
 npx wrangler pages deploy docs
 ```
+
+If the Cloudflare build configuration requires a deploy command, set it to:
+
+```bash
+npx wrangler pages deploy docs
+```
+
+Do not use `npx wrangler deploy`. That command deploys Workers and will reject
+the Pages-only `pages_build_output_dir` configuration.
+
+### Troubleshoot the Wrong Deploy Command
+
+This error means the project was configured as Workers Builds instead of Pages,
+or its deploy command was overridden:
+
+```text
+It seems that you have run `wrangler deploy` on a Pages project
+Missing entry-point to Worker script or to assets directory
+```
+
+In Cloudflare, either create/connect the repository as a Pages project, or
+change the configured deploy command from `npx wrangler deploy` to
+`npx wrangler pages deploy docs`.
 
 ## Security Notes
 

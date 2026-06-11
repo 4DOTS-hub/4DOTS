@@ -99,8 +99,16 @@ def test_cloudflare_pages_configuration():
     config = json.loads((ROOT / "wrangler.jsonc").read_text())
     assert config["name"] == "4dots"
     assert config["pages_build_output_dir"] == "./docs"
+    assert "assets" not in config
+    assert "main" not in config
     assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", config["compatibility_date"])
     assert not (ROOT / "docs" / ".nojekyll").exists()
+
+
+def test_readme_uses_pages_deploy_command():
+    readme = (ROOT / "README.md").read_text()
+    assert "npx wrangler pages deploy docs" in readme
+    assert "Do not use `npx wrangler deploy`" in readme
 
 
 def test_cloudflare_pages_security_headers():

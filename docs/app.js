@@ -2,8 +2,8 @@
 
 // Replace these two public values before launch. Never put secret keys here.
 const CONFIG = Object.freeze({
-  formEndpoint: "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL",
-  turnstileSiteKey: "YOUR_TURNSTILE_SITE_KEY",
+  formEndpoint: "https://script.google.com/macros/s/AKfycbxNm44nrQRlQzGowpryNQ6q0WiljTXg2loq39cAFhCU_qmd0VSMDOyEoyTsr_6Qxhn7/exec",
+  turnstileSiteKey: "0x4AAAAAADi7M4XA05AxgvHx",
 });
 
 const form = document.querySelector("#lead-form");
