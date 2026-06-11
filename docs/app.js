@@ -2,7 +2,7 @@
 
 // Replace these two public values before launch. Never put secret keys here.
 const CONFIG = Object.freeze({
-  formEndpoint: "https://script.google.com/macros/s/AKfycbzDi9WTc3UnvhlbL8ZMIiJMaZh1D_KJXqF9VO0Qsp01NO6uceBpEzFlGMUpkGcjpZYB/exec",
+  formEndpoint: "https://script.google.com/macros/s/AKfycbzOqNnpVGJb8tdupuzMQIdYaZFBNq4RzQlzULUOsRz4bfE-ezzQ9f3f43HOfbIcSBzo/exec",
   turnstileSiteKey: "0x4AAAAAADi7M4XA05AxgvHx",
 });
 
