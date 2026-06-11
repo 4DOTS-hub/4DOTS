@@ -91,7 +91,9 @@ same suite on pushes and pull requests.
    the deploying Google account.
 
 The script creates a `Leads` tab and header row automatically on the first
-valid submission.
+valid submission. Lead values are mapped by header name rather than fixed
+column position, so legacy or custom columns do not shift `Source`, `Consent`,
+or other values into the wrong columns.
 
 ## Configure Cloudflare Turnstile
 

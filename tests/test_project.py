@@ -18,7 +18,7 @@ const vm = require("vm");
 const context = { console };
 vm.createContext(context);
 const source = fs.readFileSync("apps-script/Code.gs", "utf8")
-  + "\n;globalThis.__test = { validatePayload_, safeCell_, escapeHtml_ };";
+  + "\n;globalThis.__test = { validatePayload_, safeCell_, escapeHtml_, buildLeadRecord_ };";
 vm.runInContext(source, context);
 """
 
@@ -41,7 +41,6 @@ def validate_payload(**overrides):
         "services": ["Định hình & Xây kênh"],
         "industry": "Khác",
         "website": "",
-        "message": "",
         "source": "test",
         "consent": "yes",
         "company": "",
@@ -171,6 +170,35 @@ def test_backend_neutralizes_spreadsheet_formulas():
 process.stdout.write(context.__test.safeCell_('=IMPORTXML("x")'));
 """
     assert run_node(script).startswith("'=")
+
+
+def test_sheet_record_maps_source_and_consent_by_header_name():
+    script = BACKEND_BOOTSTRAP + """
+const payload = {
+  fullName: "Lead",
+  phone: "0912345678",
+  email: "",
+  services: ["Định hình & Xây kênh"],
+  industry: "Khác",
+  website: "",
+  source: "4dots-landing-page",
+};
+const record = context.__test.buildLeadRecord_(payload, "date", "uuid");
+const legacyHeaders = [
+  "Received At", "Name", "Phone", "Email", "Services", "Industry", "Website",
+  "Message", "Source", "Consent", "Status", "Submission ID",
+];
+const row = legacyHeaders.map((header) =>
+  Object.prototype.hasOwnProperty.call(record, header) ? record[header] : ""
+);
+process.stdout.write(JSON.stringify({ record, row }));
+"""
+    result = json.loads(run_node(script))
+    assert result["record"]["Source"] == "4dots-landing-page"
+    assert result["record"]["Consent"] == "Yes"
+    assert result["row"][7] == ""
+    assert result["row"][8] == "4dots-landing-page"
+    assert result["row"][9] == "Yes"
 
 
 def test_javascript_sources_parse():
