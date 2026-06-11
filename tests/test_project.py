@@ -98,9 +98,12 @@ def test_manifest_uses_valid_iana_timezone():
 
 def test_project_uses_standard_requirements_file():
     requirements = (ROOT / "requirements.txt").read_text()
+    requirements_doc = (ROOT / "REQUIREMENTS.md").read_text()
     workflow = (ROOT / ".github" / "workflows" / "test.yml").read_text()
     readme = (ROOT / "README.md").read_text()
-    assert "pytest" in requirements
+    assert requirements.strip() == "pytest==9.0.3"
+    assert "Node.js | `24`" in requirements_doc
+    assert "There is no `Message` column" in requirements_doc
     assert "requirements.txt" in workflow
     assert "requirements.txt" in readme
     assert "requirements-dev.txt" not in workflow
@@ -128,6 +131,8 @@ def test_readme_uses_pages_deploy_command():
     readme = (ROOT / "README.md").read_text()
     assert "npx wrangler pages deploy docs" in readme
     assert "Do not use `npx wrangler deploy`" in readme
+    assert "Manage deployments" in readme
+    assert "Only update `CONFIG.formEndpoint`" in readme
 
 
 def test_cloudflare_pages_security_headers():

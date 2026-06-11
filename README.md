@@ -16,7 +16,8 @@ Visitor
 ```
 
 The frontend contains no secret values. The Turnstile secret and Sheet ID stay
-in Apps Script Properties.
+in Apps Script Properties. See [`REQUIREMENTS.md`](REQUIREMENTS.md) for the
+tested runtime versions, current sheet schema, and redeployment rules.
 
 ## Repository Structure
 
@@ -31,6 +32,7 @@ apps-script/          Google Apps Script source
   appsscript.json
 tests/                Automated contract and validation tests
 requirements.txt      Python dependencies for local tests and CI
+REQUIREMENTS.md       Tested runtime, configuration, and deployment requirements
 .node-version         Node.js version used by CI and compatible tooling
 .nvmrc                Node.js version used by nvm
 wrangler.jsonc        Cloudflare Pages project configuration
@@ -45,8 +47,9 @@ From the repository root:
 python3 -m http.server 8000 --directory docs
 ```
 
-Open `http://localhost:8000`. The form stays disabled until its public endpoint
-and Turnstile site key are configured.
+Open `http://localhost:8000`. Turnstile hostname restrictions may prevent the
+production widget from verifying on localhost; use the production Pages URL for
+an end-to-end form test.
 
 ## Run Automated Tests
 
@@ -90,9 +93,15 @@ same suite on pushes and pull requests.
 3. Do not make the Sheet public. The Apps Script deployment writes to it using
    the deploying Google account.
 
-The script creates a `Leads` tab and header row automatically on the first
-valid submission. Use a new or empty tab when changing the sheet schema so its
-headers remain aligned with the values written by `Code.gs`.
+The script creates a `Leads` tab and this header row on the first valid
+submission:
+
+```text
+Received At | Name | Phone | Email | Services | Industry | Website | Source | Consent | Status | Submission ID
+```
+
+Use a new or empty tab. There is no `Message` column, and the column order must
+remain aligned with the values written by `Code.gs`.
 
 ## Configure Cloudflare Turnstile
 
@@ -140,7 +149,7 @@ to the Apps Script `ALLOWED_HOSTNAMES` property.
    | `ALLOWED_HOSTNAMES` | Recommended | Comma-separated hosts, such as `4dots.pages.dev,www.example.com` |
    | `RETURN_URL` | Recommended | Full public landing-page URL |
 
-5. Select **Deploy > New deployment > Web app**.
+5. For the initial deployment, select **Deploy > New deployment > Web app**.
 6. Set **Execute as** to yourself.
 7. Set access to **Anyone**.
 8. Authorize the requested Google Sheets and external-request scopes.
@@ -155,8 +164,22 @@ The `/exec` URL is a public endpoint and is safe to place in the frontend. The
 receiver still requires a valid, single-use Turnstile token and validates all
 submitted values server-side.
 
-After changing `Code.gs`, create a new Apps Script deployment version so the
-public endpoint receives the update.
+### Redeploy Apps Script
+
+After changing `Code.gs`:
+
+1. Save the updated Apps Script files.
+2. Open **Deploy > Manage deployments**.
+3. Edit the existing web-app deployment.
+4. Select **New version** and deploy.
+
+Editing the existing deployment preserves its `/exec` URL, so
+`CONFIG.formEndpoint` in `docs/app.js` does not need to change.
+
+Only update `CONFIG.formEndpoint` and redeploy Cloudflare Pages when you create
+an entirely new Apps Script deployment with a new `/exec` URL. Script Property
+changes such as `SHEET_ID`, `SHEET_NAME`, `ALLOWED_HOSTNAMES`, or `RETURN_URL`
+normally do not require a new deployment version.
 
 The Apps Script confirmation page uses top-level navigation for its return
 link. This is required because Apps Script renders HTML inside a sandboxed
@@ -227,15 +250,19 @@ change the configured deploy command from `npx wrangler deploy` to
 - Cloudflare Pages is appropriate for public lead forms, not passwords, card
   details, or other sensitive transactions.
 
-## Launch Checklist
+## Production Checklist
 
-- Replace both placeholders in `docs/app.js`.
+- Confirm `docs/app.js` contains the active Apps Script `/exec` URL and the
+  public site key from the matching Turnstile widget.
 - Submit one valid test lead and confirm it appears in the private Sheet.
+- Confirm the sheet uses the current 11-column schema with no `Message` column.
 - Test invalid email, invalid phone, missing consent, and no selected service.
 - Test on mobile and desktop.
 - Set `RETURN_URL` and `ALLOWED_HOSTNAMES` to the final Cloudflare Pages or
   custom-domain hostname.
 - Confirm Cloudflare Pages serves the security headers from `docs/_headers`.
+- After changing `Code.gs`, redeploy the existing Apps Script deployment as a
+  new version.
 - Add a privacy policy before running paid acquisition campaigns.
 
 ## License
