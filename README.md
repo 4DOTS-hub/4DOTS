@@ -30,7 +30,9 @@ apps-script/          Google Apps Script source
   Code.gs
   appsscript.json
 tests/                Automated contract and validation tests
-requirements-dev.txt  Pinned local/CI test dependency
+requirements.txt      Python dependencies for local tests and CI
+.node-version         Node.js version used by CI and compatible tooling
+.nvmrc                Node.js version used by nvm
 wrangler.jsonc        Cloudflare Pages project configuration
 assets/               Local design references; not published from docs/
 ```
@@ -52,8 +54,18 @@ Create the local virtual environment and install the test dependency:
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m pip install -r requirements.txt
 ```
+
+Use Node.js 24 for JavaScript checks and Wrangler:
+
+```bash
+nvm use
+node --version
+```
+
+For Cloudflare builds, add the environment variable `NODE_VERSION=24` under
+the project's build settings if the detected Node version is older.
 
 Run the suite:
 

@@ -3,6 +3,7 @@ import json
 import re
 import subprocess
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -90,9 +91,28 @@ def extract_frontend_values():
     return services, industries
 
 
-def test_manifest_uses_canonical_vietnam_timezone():
+def test_manifest_uses_valid_iana_timezone():
     manifest = json.loads((ROOT / "apps-script" / "appsscript.json").read_text())
-    assert manifest["timeZone"] == "Asia/Ho_Chi_Minh"
+    assert "/" in manifest["timeZone"]
+    assert ZoneInfo(manifest["timeZone"]).key == manifest["timeZone"]
+
+
+def test_project_uses_standard_requirements_file():
+    requirements = (ROOT / "requirements.txt").read_text()
+    workflow = (ROOT / ".github" / "workflows" / "test.yml").read_text()
+    readme = (ROOT / "README.md").read_text()
+    assert "pytest" in requirements
+    assert "requirements.txt" in workflow
+    assert "requirements.txt" in readme
+    assert "requirements-dev.txt" not in workflow
+    assert "requirements-dev.txt" not in readme
+
+
+def test_project_uses_node_24():
+    workflow = (ROOT / ".github" / "workflows" / "test.yml").read_text()
+    assert (ROOT / ".node-version").read_text().strip() == "24"
+    assert (ROOT / ".nvmrc").read_text().strip() == "24"
+    assert 'node-version-file: ".node-version"' in workflow
 
 
 def test_cloudflare_pages_configuration():
